@@ -24,6 +24,7 @@ class IngestionHandler:
         self.reader: PdfReader = PdfReader(self.path)
         self.raw_text: str = 'empty'
         self.chunks: List[str] = None
+        if extract_on_load: self.extract_raw_text()
         return
 
 
