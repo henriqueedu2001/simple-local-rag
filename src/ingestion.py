@@ -1,8 +1,9 @@
-import os
-from typing import *
+from llm import EmbeddingModel
 from pypdf import PdfReader
 import pandas as pd
-import ollama
+import numpy as np
+import os
+from typing import *
 
 
 class IngestionHandler:
@@ -84,6 +85,7 @@ class ChunkingHandler:
         self.raw_text = raw_text
         self.file_path = file_path
         self.chunks: List[str] = None
+        self.chunk_embeddings: np.typing.ArrayLike = None
         self.load_text()
         pass
     
@@ -117,6 +119,26 @@ class ChunkingHandler:
         chunks = [chunk.strip() for chunk in chunks]
         chunks = [chunk for chunk in chunks if chunk not in ['']]
         self.chunks = chunks
+        return
+    
+    
+    def embed(self):
+        """
+        Generate embeddings for the current text chunks using the default embedding model.
+
+        This method uses the `EmbeddingModel` class to convert each chunk of text
+        stored in `self.chunks` into a numerical vector representation and stores
+        the result in `self.chunk_embeddings`.
+
+        Examples:
+            >>> handler = ChunkingHandler(file_path="output.txt")
+            >>> handler.split()
+            >>> handler.normalize_lengths(minimum_chunk_length=300)
+            >>> handler.embed()
+            >>> print(handler.chunk_embeddings.shape)  # e.g., (num_chunks, embedding_dim)
+        """
+        embedding_model = EmbeddingModel()
+        self.chunk_embeddings = embedding_model.embed(self.chunks)
         return
     
 
@@ -165,3 +187,22 @@ class ChunkingHandler:
         df = pd.DataFrame(data)
         df.to_csv(path)
         return
+    
+    
+    def save_embeddings(self, path: os.path):
+        """
+        Save the generated embeddings to a file in NumPy `.npy` format.
+
+        Args:
+            path (os.path): Path where the embeddings file should be saved.
+
+        Examples:
+            >>> handler = ChunkingHandler(file_path="output.txt")
+            >>> handler.split()
+            >>> handler.normalize_lengths(minimum_chunk_length=300)
+            >>> handler.embed()
+            >>> handler.save_embeddings("embeddings.npy")
+        """
+        np.save(file=path, arr=self.chunk_embeddings)
+        return
+    
