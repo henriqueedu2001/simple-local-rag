@@ -7,7 +7,7 @@ from typing import *
 
 
 class IngestionHandler:
-    def __init__(self, path: os.path, extract_on_load: bool = True):
+    def __init__(self, path: os.path, extract_on_load: bool = False):
         """
         Handle PDF ingestion and optional text extraction.
 
